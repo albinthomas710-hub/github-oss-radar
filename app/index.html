@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GitHub OSS Radar</title>
+<script src="tailwind.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          ink: { 950: '#0a0b10', 900: '#0f1117', 800: '#161922', 700: '#1f2330', 600: '#2a2f40' },
+          accent: { 400: '#7c9cff', 500: '#5c7cfa', 600: '#4263eb' },
+          ai: { 500: '#a855f7' }
+        }
+      }
+    }
+  }
+</script>
+<link rel="stylesheet" href="styles.css">
+<link rel="preconnect" href="https://api.github.com">
+</head>
+<body class="bg-ink-950 text-slate-200 min-h-screen antialiased">
+  <div class="max-w-7xl mx-auto p-4 md:p-8">
+    <!-- HEADER -->
+    <header class="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-500 to-ai-500 grid place-items-center shadow-lg shadow-accent-500/20">
+          <span class="text-white font-bold">⚡</span>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">GitHub OSS Radar</h1>
+          <p class="text-xs text-slate-400" id="subtitle">Stay ahead. Find masterpieces. Skip the doomscroll.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="btn-refresh" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm flex items-center gap-2">
+          <span id="refresh-icon">↻</span> <span class="hidden sm:inline">Refresh</span>
+        </button>
+        <button id="btn-notify" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm hidden sm:inline">🔔 Alerts</button>
+        <button id="btn-login" class="px-3 py-2 rounded-lg bg-gradient-to-r from-accent-500 to-ai-500 hover:opacity-90 text-white text-sm font-medium flex items-center gap-2">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58 0-.29-.01-1.05-.02-2.06-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.08 1.85 1.24 1.85 1.24 1.08 1.84 2.82 1.31 3.51 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.95 0-1.32.47-2.39 1.24-3.24-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.85 1.24 1.92 1.24 3.24 0 4.62-2.81 5.64-5.48 5.94.43.37.82 1.1.82 2.22 0 1.6-.01 2.89-.01 3.29 0 .32.22.7.83.58A12 12 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          <span class="hidden sm:inline">Sign in</span>
+        </button>
+        <div id="user-badge" class="hidden items-center gap-2 px-2 py-1 rounded-lg bg-ink-800 border border-ink-600">
+          <img id="user-avatar" src="" alt="" class="w-6 h-6 rounded-full" />
+          <span id="user-login" class="text-sm font-medium"></span>
+          <button id="btn-logout" class="text-xs text-slate-400 hover:text-red-400 ml-1" title="Sign out">⎋</button>
+        </div>
+        <span id="rate-limit" class="text-xs text-slate-500"></span>
+      </div>
+    </header>
+
+    <!-- TABS -->
+    <nav class="flex flex-wrap gap-1 mb-6 border-b border-ink-700">
+      <button data-tab="briefing"  class="tab-btn">🎯 Briefing</button>
+      <button data-tab="insider"   class="tab-btn">💎 Insider</button>
+      <button data-tab="releases"  class="tab-btn">🚀 Releases</button>
+      <button data-tab="trending"  class="tab-btn">🔥 Trending</button>
+      <button data-tab="following" class="tab-btn">⭐ Following</button>
+      <button data-tab="curated"   class="tab-btn">🎯 Curated</button>
+      <button data-tab="saved"     class="tab-btn">📌 Saved</button>
+      <button data-tab="daily"     class="tab-btn">📰 Daily</button>
+      <button data-tab="settings"  class="tab-btn">⚙ Settings</button>
+    </nav>
+
+    <!-- BRIEFING -->
+    <section data-panel="briefing" class="panel">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-semibold">Today's briefing</h2>
+          <p class="text-xs text-slate-400" id="briefing-date"></p>
+        </div>
+        <button id="btn-briefing-refresh" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sm font-medium">⚡ Build briefing</button>
+      </div>
+      <div id="briefing-content">
+        <div class="bg-ink-900 border border-ink-700 rounded-xl p-6 text-center text-slate-400">
+          Click <strong>Build briefing</strong> to get your one-screen catch-up.<br>
+          <span class="text-xs">Pulls trending, insider stars, and releases — picks the 6 things that actually matter today.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- INSIDER STARS -->
+    <section data-panel="insider" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-semibold">What insiders are starring</h2>
+          <p class="text-xs text-slate-400">Recent stars (last 21 days) from people you follow. 💎 = starred by ≥2 of them.</p>
+        </div>
+        <span id="insider-meta" class="text-xs text-slate-500"></span>
+      </div>
+      <div id="list-insider" class="space-y-3"></div>
+    </section>
+
+    <!-- RELEASES -->
+    <section data-panel="releases" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-semibold">Release radar</h2>
+          <p class="text-xs text-slate-400">New releases (last 30 days) from your saved + followed repos.</p>
+        </div>
+        <span id="releases-meta" class="text-xs text-slate-500"></span>
+      </div>
+      <div id="list-releases" class="space-y-3"></div>
+    </section>
+
+    <!-- TRENDING -->
+    <section data-panel="trending" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-lg font-semibold">What's blowing up</h2>
+        <input id="search-trending" placeholder="filter…" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-accent-500" />
+      </div>
+      <div class="flex gap-2 mb-4 flex-wrap text-sm" id="trending-filters">
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="ai">AI / DEV</button>
+        <button class="filter-chip" data-filter="ai-agents" style="border-color:#a855f755;">🤖 Agents</button>
+        <button class="filter-chip" data-filter="claude-mcp" style="border-color:#7c9cff55;">⚡ Claude/MCP</button>
+        <button class="filter-chip" data-filter="startup-tools" style="border-color:#10b98155;">🚀 Startup</button>
+        <button class="filter-chip" data-filter="dev-tools" style="border-color:#f59e0b55;">🛠 Dev Tools</button>
+        <button class="filter-chip" data-filter="frontend" style="border-color:#ec489955;">🎨 Frontend</button>
+      </div>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="text-sm uppercase tracking-wider text-slate-400 mb-3">Top 10 · Last 7 days</h3>
+          <div id="list-week" class="space-y-3"></div>
+        </div>
+        <div>
+          <h3 class="text-sm uppercase tracking-wider text-slate-400 mb-3">Top 5 · Last 30 days</h3>
+          <div id="list-month" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOLLOWING -->
+    <section data-panel="following" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-lg font-semibold">People worth watching</h2>
+        <div class="flex gap-2 flex-wrap">
+          <div class="relative">
+            <input id="add-user" placeholder="🔍 search github users (e.g. karpathy)" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent-500 w-72" autocomplete="off" />
+            <div id="user-ac" class="ac-dropdown hidden"></div>
+          </div>
+          <button id="btn-import-follows" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm">⬇ Import my GitHub follows</button>
+        </div>
+      </div>
+      <div class="text-xs text-slate-400 mb-3">Type a name — you'll see matching users with avatars and bios. Click one to follow. Or import everyone you already follow on GitHub.</div>
+      <div id="follow-cards" class="grid md:grid-cols-2 gap-2 mb-6"></div>
+      <h3 class="text-sm uppercase tracking-wider text-slate-400 mb-3">Recent repos from your follows</h3>
+      <div id="list-following" class="space-y-3"></div>
+    </section>
+
+    <!-- CURATED -->
+    <section data-panel="curated" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-lg font-semibold">Discovery lanes</h2>
+        <div class="text-xs text-slate-400">Interest-based deep search · scored by relevance · like @gittrend.io but for YOUR interests</div>
+      </div>
+      <div class="flex gap-2 mb-4 flex-wrap items-center">
+        <input id="add-topic" placeholder="add a topic (e.g. rust, nextjs, rag)" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent-500 w-64" />
+        <button id="btn-add-topic" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sm font-medium">+ Add topic</button>
+        <span class="text-xs text-slate-500">· click × on a chip to remove · <a href="https://github.com/topics" target="_blank" class="text-accent-400 hover:underline">browse github topics</a></span>
+      </div>
+      <div id="topic-chips" class="flex flex-wrap gap-2 mb-6"></div>
+      <div id="list-curated" class="space-y-3"></div>
+    </section>
+
+    <!-- SAVED -->
+    <section data-panel="saved" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="text-lg font-semibold">Your stash</h2>
+          <p class="text-xs text-slate-400">Paste any GitHub URL. Organize into your own topics — whatever buckets make sense to you. No defaults, no prescribed categories.</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button id="btn-add-saved"  class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sm font-medium">+ Add repo(s)</button>
+          <button id="btn-import-stars" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm">⬇ Import my GitHub stars</button>
+          <button id="btn-new-collection" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm font-medium">+ New topic</button>
+        </div>
+      </div>
+      <div id="coll-chips" class="flex flex-wrap gap-2 mb-4"></div>
+      <div class="flex gap-2 mb-4 flex-wrap">
+        <input id="search-saved" placeholder="🔍 search saved…" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-accent-500 flex-1 min-w-[200px]" />
+        <select id="sort-saved" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm">
+          <option value="recent">Recently saved</option>
+          <option value="stars">Most stars</option>
+          <option value="name">Name A–Z</option>
+          <option value="velocity">Hottest (stars/day)</option>
+        </select>
+        <span id="saved-count" class="text-xs text-slate-400 self-center"></span>
+      </div>
+      <div id="list-saved" class="space-y-3"></div>
+    </section>
+
+    <!-- DAILY REPORT -->
+    <section data-panel="daily" class="panel hidden">
+      <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-lg font-semibold">Daily report</h2>
+        <div class="flex gap-2">
+          <button id="btn-generate" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sm font-medium">⚡ Generate now</button>
+          <button id="btn-download" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm hidden">⬇ Download .md</button>
+          <button id="btn-copy" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm hidden">📋 Copy</button>
+        </div>
+      </div>
+      <div class="bg-ink-900 border border-ink-700 rounded-xl p-4 mb-4">
+        <div class="text-xs text-slate-400 mb-1">Scheduled task</div>
+        <div class="font-mono text-sm">GitHubTrendingDaily · daily at <span id="sched-time">08:00</span> · writes a markdown file next to <span class="text-accent-400">fetch-trending.ps1</span></div>
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+          <button class="copy-cmd" data-cmd="schtasks /Run /TN GitHubTrendingDaily">▶ Run now</button>
+          <button class="copy-cmd" data-cmd="schtasks /Change /TN GitHubTrendingDaily /ST 09:00">🕘 Change time</button>
+          <button class="copy-cmd" data-cmd="schtasks /Change /TN GitHubTrendingDaily /DISABLE">⏸ Disable</button>
+          <button class="copy-cmd" data-cmd="schtasks /Change /TN GitHubTrendingDaily /ENABLE">▶ Enable</button>
+          <button class="copy-cmd" data-cmd="schtasks /Delete /TN GitHubTrendingDaily /F">🗑 Delete</button>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">Click any button to copy the command to clipboard, then paste into PowerShell.</div>
+      </div>
+      <pre id="daily-preview" class="bg-ink-900 border border-ink-700 rounded-xl p-4 text-sm whitespace-pre-wrap font-mono max-h-[60vh] overflow-auto text-slate-300">Click "Generate now" to build today's report.</pre>
+    </section>
+
+    <!-- SETTINGS -->
+    <section data-panel="settings" class="panel hidden max-w-2xl">
+      <h2 class="text-lg font-semibold mb-4">Settings</h2>
+
+      <div class="bg-ink-900 border border-ink-700 rounded-xl p-5 mb-4">
+        <label class="block text-sm font-medium mb-2">GitHub Personal Access Token <span class="text-slate-500 text-xs font-normal">(raises rate limit 60 → 5,000 req/hr; saving here also signs you in)</span></label>
+        <div class="flex gap-2">
+          <input id="pat-input" type="password" placeholder="ghp_…" class="flex-1 bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent-500" />
+          <button id="btn-save-pat" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-sm font-medium">Save</button>
+        </div>
+        <div class="text-xs text-slate-500 mt-2">Stored only in your browser's localStorage. Never sent anywhere except api.github.com. <a href="https://github.com/settings/tokens?type=beta" target="_blank" class="text-accent-400 hover:underline">Create one</a> (no scopes needed for public data).</div>
+      </div>
+
+      <div class="bg-ink-900 border border-ink-700 rounded-xl p-5 mb-4">
+        <div class="font-medium mb-2">Auto-refresh</div>
+        <div class="flex items-center gap-2">
+          <select id="refresh-interval" class="bg-ink-800 border border-ink-600 rounded-lg px-3 py-2 text-sm">
+            <option value="0">Off</option>
+            <option value="300000">Every 5 min</option>
+            <option value="900000">Every 15 min</option>
+            <option value="3600000" selected>Every hour</option>
+          </select>
+          <span class="text-xs text-slate-500">Only when this tab is open.</span>
+        </div>
+      </div>
+
+      <div class="bg-ink-900 border border-ink-700 rounded-xl p-5 mb-4">
+        <div class="font-medium mb-2">Hidden repos <span id="hidden-count" class="text-xs text-slate-500 font-normal"></span></div>
+        <p class="text-xs text-slate-500 mb-2">Repos you dismissed with "✕ Not interested". Click any to unhide.</p>
+        <div id="hidden-list" class="flex flex-wrap gap-2"></div>
+      </div>
+
+      <div class="bg-ink-900 border border-ink-700 rounded-xl p-5">
+        <div class="font-medium mb-2">Data</div>
+        <div class="flex flex-wrap gap-2">
+          <button id="btn-export" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm">⬇ Export everything</button>
+          <button id="btn-import" class="px-3 py-2 rounded-lg bg-ink-800 hover:bg-ink-700 border border-ink-600 text-sm">⬆ Import</button>
+          <input id="import-file" type="file" accept="application/json" class="hidden" />
+          <button id="btn-reset" class="px-3 py-2 rounded-lg bg-red-900/40 hover:bg-red-900/60 border border-red-800 text-sm text-red-300">🗑 Reset all</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- MODAL MOUNT -->
+  <div id="modal-root"></div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-ink-800 border border-ink-600 text-sm px-4 py-3 rounded-lg shadow-2xl translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

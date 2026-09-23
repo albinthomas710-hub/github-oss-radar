@@ -1,0 +1,7 @@
+.github-token
+*.log
+*.backup.js
+*.backup.html
+*.backup.css
+.DS_Store
+Thumbs.db
