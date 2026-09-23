@@ -4,7 +4,9 @@ Find GitHub repos that match **your** interests. Skip the doomscroll.
 
 One HTML file. No install, no server, no account required to try it. Your saves, follows, and token stay in your browser and are only sent to `api.github.com`.
 
-**[Open the app](app/index.html)** after you clone it, or download the repo and double-click `app/index.html`.
+**Live app:** https://albinthomas710-hub.github.io/github-oss-radar/app/
+
+Or clone the repo and open `app/index.html`. On Windows, double-click `app/launch.bat`.
 
 ## What it does
 
