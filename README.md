@@ -1,10 +1,46 @@
-# GitHub OSS Radar
+<p align="center">
+  <a href="https://albinthomas710-hub.github.io/github-oss-radar/app/">
+    <img src="docs/lanes.png" alt="GitHub OSS Radar discovery lanes, scored by relevance" width="100%">
+  </a>
+</p>
 
-A personal radar for GitHub. It finds repos that match your interests, shows what people you trust are starring, and keeps the ones worth keeping. You open one page, scan, save, and leave. You do not sit in GitHub Trending, Twitter, or Instagram hoping a good repo floats past.
+<h1 align="center">GitHub OSS Radar</h1>
 
-**Live app:** https://albinthomas710-hub.github.io/github-oss-radar/app/
+<p align="center">
+  Find the GitHub repos worth your time.<br>
+  Interest lanes. Insider stars. A stash that learns what you keep.
+</p>
 
-The whole product is a static site. No backend, no database, no signup wall. Clone it or open the live link. Your follows, saves, taste, and token stay in the browser and are sent only to `api.github.com`.
+<p align="center">
+  <a href="https://albinthomas710-hub.github.io/github-oss-radar/app/"><strong>Open the live app</strong></a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/albinthomas710-hub/github-oss-radar">Source</a>
+  &nbsp;·&nbsp;
+  <a href="#every-tab">How it works</a>
+</p>
+
+<p align="center">
+  <img alt="MIT license" src="https://img.shields.io/badge/license-MIT-7c9cff">
+  <img alt="No backend" src="https://img.shields.io/badge/backend-none-10b981">
+  <img alt="Vanilla JavaScript" src="https://img.shields.io/badge/javascript-vanilla-f59e0b">
+  <img alt="Data stays in the browser" src="https://img.shields.io/badge/data-your%20browser-a855f7">
+</p>
+
+One HTML file. No install, no server, no account required to try it. GitHub’s public API is free. A token with no scopes raises the limit from 60 requests an hour to 5,000, and that token never leaves your browser except to call `api.github.com`.
+
+<p align="center">
+  <img src="docs/preview.png" alt="Trending view ranked by velocity and interest match" width="100%">
+</p>
+
+The good repos are public on GitHub before anyone posts a screenshot of them. This page is the filter: what is moving, what people you trust just starred, and what matches the lanes you actually care about. Save the gold. Hide the rest. Come back tomorrow and the taste model has shifted.
+
+| | | |
+|---|---|---|
+| **Interest lanes** | Five built-in searches for agents, Claude and MCP, startups, dev tools, and frontend. Each repo gets a relevance score. | Add your own topics. |
+| **Insider stars** | See what the people you follow starred in the last 21 days. Two or more of them on the same repo is marked as a gem. | That is the signal curators are late to. |
+| **Velocity** | Stars divided by the age of the repo. A new repo moving fast ranks above an old repo with the same star count. | Trending is not “most stars ever.” |
+| **Taste** | Saving boosts those topics and languages. Hiding demotes them. The next briefing prefers what you have already kept. | Your stash is the training set. |
+| **Local forever** | Follows, saves, topics, and the token live in the browser. Export them as JSON. There is no account to lose. | Reset does not touch GitHub. |
 
 ---
 
